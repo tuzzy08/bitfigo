@@ -23,8 +23,9 @@ export class UsersService {
   async signUp(signupDto: SignUpDto) {
     if (!signupDto) throw new BadRequestException('No signup data provided');
     // Check if user already exists
-    const user = this.getUser(signupDto.email);
+    const user = await this.getUser(signupDto.username);
     if (user) throw new BadRequestException('User with this email exists!');
+
     const salt = 10;
     const { password, ...rest } = signupDto;
     const passwordHash = await bcrypt.hash(password, salt);
@@ -36,11 +37,12 @@ export class UsersService {
     return newUser.save();
   }
 
-  async getUser(email) {
-    if (!email) throw new BadRequestException('No email provided');
+  async getUser(username) {
+    if (!username) throw new BadRequestException('No email provided');
     // ToObject returns the document as a javascript object
-    const user = await this.usersModel.findOne({ email });
-    if (!user) throw new NotFoundException('User not found');
-    return user.toObject();
+    const user = await this.usersModel.findOne({ email: username });
+    if (user) {
+      return user.toObject();
+    }
   }
 }

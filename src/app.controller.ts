@@ -15,7 +15,6 @@ export class AppController {
 
   @Post('auth/signup')
   async signup(@Body() signupDTO: SignUpDto) {
-    console.log(signupDTO);
     return this.authService.signUp(signupDTO);
   }
 }
