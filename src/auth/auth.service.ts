@@ -28,6 +28,11 @@ export class AuthService {
     };
   }
   async signUp(signupDTO: SignUpDto) {
-    return this.usersService.signUp(signupDTO);
+    const user = await this.usersService.signUp(signupDTO);
+    const payload = { username: user.email, sub: user._id };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user,
+    };
   }
 }

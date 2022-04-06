@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { Users, UsersDocument } from './schema/users.schema';
 import { SignUpDto } from './dto/sign-up.dto';
 import { WalletService } from '../wallet/wallet.service';
+import { sign } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +22,9 @@ export class UsersService {
   ) {}
   async signUp(signupDto: SignUpDto) {
     if (!signupDto) throw new BadRequestException('No signup data provided');
+    // Check if user already exists
+    const user = this.getUser(signupDto.email);
+    if (user) throw new BadRequestException('User with this email exists!');
     const salt = 10;
     const { password, ...rest } = signupDto;
     const passwordHash = await bcrypt.hash(password, salt);
