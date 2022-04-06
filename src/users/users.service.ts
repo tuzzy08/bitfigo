@@ -2,6 +2,8 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -14,21 +16,23 @@ import { WalletService } from '../wallet/wallet.service';
 export class UsersService {
   constructor(
     @InjectModel(Users.name) private usersModel: Model<UsersDocument>,
+    @Inject(forwardRef(() => WalletService))
     private walletService: WalletService,
   ) {}
   async signUp(signupDto: SignUpDto) {
     if (!signupDto) throw new BadRequestException('No signup data provided');
     const salt = 10;
-    const { password, fullName, email, mobile, cryptoAddress } = signupDto;
+    const { password, ...rest } = signupDto;
     const passwordHash = await bcrypt.hash(password, salt);
-    const payload = { fullName, email, passwordHash, mobile, cryptoAddress };
+    const payload = { ...rest, passwordHash };
     const newUser = await new this.usersModel(payload);
-    const walletID = await this.walletService.createWallet(newUser._id);
-    newUser.walletID = walletID;
+    // Initialize wallet and balances
+    const wallet = this.walletService.createWallet();
+    newUser.wallet = wallet;
     return newUser.save();
   }
 
-  async getUser(email: string) {
+  async getUser(email) {
     if (!email) throw new BadRequestException('No email provided');
     // ToObject returns the document as a javascript object
     const user = await this.usersModel.findOne({ email });

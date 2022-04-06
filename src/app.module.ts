@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SentryModule } from '@ntegral/nestjs-sentry';
-import { WalletModule } from './wallet/wallet.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { WalletModule } from './wallet/wallet.module';
 import { AppController } from './app.controller';
 import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
@@ -14,7 +14,6 @@ import { AdminModule } from './admin/admin.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    WalletModule,
     // Initialize Sentry JS
     SentryModule.forRoot({
       dsn: process.env.SENTRY_DSN,
@@ -25,9 +24,10 @@ import { AdminModule } from './admin/admin.module';
       useNewUrlParser: true,
       useUnifiedTopology: true,
     }),
-    AuthModule,
     UsersModule,
     AdminModule,
+    AuthModule,
+    WalletModule,
   ],
   controllers: [AppController, AdminController],
 })

@@ -1,63 +1,66 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConvertDTO, DepositDTO, TransferDTO, WithdrawDTO } from './dto';
 import { Wallet, WalletDocument } from './schemas/wallet.schema';
+import { Users, UsersDocument } from '../users/schema/users.schema';
 import { tokens, TokenSymbols } from '../utils/tokens';
 import { InsufficientFundsException } from './wallet-exception';
 import {
   getCurrentPrices,
   calculateExchangeRate,
 } from '../utils/coingecko-api';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class WalletService {
   constructor(
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
+    @InjectModel(Users.name) private userModel: Model<UsersDocument>,
   ) {}
 
-  async createWallet(ownerID) {
-    // Check if wallet exists
-    const existingWallet = await this.walletModel.findOne({ owner: ownerID });
-    if (existingWallet)
-      throw new BadRequestException('A wallet already exists for this user');
-    // Create new wallet for the user
+  /***
+   * Create a new multi-currency wallet and return it
+   */
+  createWallet() {
     const tokenBalances = new Map();
     tokens.map((token) => {
       tokenBalances.set(token, 0);
     });
-    const wallet = new this.walletModel();
-    wallet.owner = ownerID;
-    wallet.balances = tokenBalances;
-    const { _id } = await wallet.save();
-    return _id;
+    return tokenBalances;
   }
 
   async deposit(depositDto: DepositDTO) {
-    const { userId: ownerId, token, amount } = depositDto;
-    // Fetch user wallet
-    const wallet = await this.walletModel.findOne({ owner: ownerId });
-    if (!wallet) return;
-
-    let currentBalance = Number(wallet.balances.get(token));
+    const { userId, token, amount } = depositDto;
+    // Fetch user
+    const user = await this.userModel.findOne({ _id: userId });
+    if (!user) return;
+    // Update balance
+    let currentBalance = Number(user.wallet.get(token));
     currentBalance += Number(amount);
-    wallet.balances.set(token, Number(currentBalance));
-    return wallet.save();
+    user.wallet.set(token, Number(currentBalance));
+    return user.save();
   }
 
   async withdraw(withdrawDto: WithdrawDTO) {
-    const { userId: ownerId, token, amount } = withdrawDto;
-    // Fetch user wallet
-    const wallet = await this.walletModel.findOne({ owner: ownerId });
-    if (!wallet) return;
-    let balance = Number(wallet.balances.get(token));
+    const { userId, token, amount } = withdrawDto;
+    // Fetch user
+    const user = await this.userModel.findOne({ _id: userId });
+    if (!user) return;
+
+    let balance = Number(user.wallet.get(token));
     // check if user has sufficient balance for this withdrawal
-    if (amount > balance) {
+    if (Number(amount) > balance) {
       throw new InsufficientFundsException();
     }
     balance -= Number(amount);
-    wallet.balances.set(token, Number(balance));
-    return wallet.save();
+    user.wallet.set(token, Number(balance));
+    return user.save();
   }
 
   async transfer(transferDto: TransferDTO) {
@@ -65,22 +68,19 @@ export class WalletService {
   }
 
   async convert(convertDto: ConvertDTO) {
-    const {
-      userId: ownerId,
-      baseToken,
-      destinationToken,
-      baseTokenAmount,
-    } = convertDto;
+    const { userId, baseToken, destinationToken, baseTokenAmount } = convertDto;
     // Check if baseToken amount is valid
-    if (baseTokenAmount <= 0) {
+    if (Number(baseTokenAmount) <= 0) {
       throw new BadRequestException('Invalid amount for conversion');
     }
-    // Fetch user's wallet
-    const wallet = await this.walletModel.findOne({ owner: ownerId });
-    if (!wallet) return;
-    const baseTokenbalance = Number(wallet.balances.get(baseToken));
+    // Fetch user
+    const user = await this.userModel.findOne({ _id: userId });
+    if (!user) return;
+    // Fetch Balances of both tokens
+    let destinationTokenbalance = Number(user.wallet.get(destinationToken));
+    let baseTokenbalance = Number(user.wallet.get(baseToken));
     // check if user has sufficient balance for this conversion
-    if (baseTokenAmount > baseTokenbalance) {
+    if (Number(baseTokenAmount) > baseTokenbalance) {
       throw new InsufficientFundsException();
     }
     // Fetch prices of base & destination tokens from coinGecko
@@ -91,11 +91,17 @@ export class WalletService {
     const baseTokenPrice = currentPrices[TokenSymbols[baseToken]].usd;
     const destinationTokenPrice =
       currentPrices[TokenSymbols[destinationToken]].usd;
-
-    return calculateExchangeRate({
+    // Calculate exchange rate
+    const newDestinationTokenAmount = calculateExchangeRate({
       baseTokenPrice,
       destinationTokenPrice,
       baseTokenAmount,
     });
+    // Update wallet balances
+    destinationTokenbalance += Number(newDestinationTokenAmount);
+    user.wallet.set(destinationToken, destinationTokenbalance);
+
+    baseTokenbalance -= Number(baseTokenAmount);
+    user.wallet.set(baseToken, baseTokenbalance);
   }
 }

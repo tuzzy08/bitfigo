@@ -5,10 +5,74 @@ import { Role } from '../../auth/enums/role.enum';
 
 export type UsersDocument = Users & Document;
 
+@Schema({ timestamps: true })
+class Deposits {
+  @Prop({})
+  token: string;
+  @Prop({})
+  amount: string;
+  @Prop({})
+  network: string;
+  @Prop({})
+  address: string;
+  @Prop({})
+  status: string;
+}
+@Schema({ timestamps: true })
+class Withdrawals {
+  @Prop({})
+  token: string;
+  @Prop({})
+  amount: string;
+  @Prop({})
+  network: string;
+  @Prop({})
+  status: string;
+}
+@Schema({ timestamps: true })
+class Transfers {
+  @Prop({})
+  token: string;
+  @Prop({})
+  amount: string;
+  @Prop({})
+  network: string;
+  @Prop({})
+  status: string;
+}
+@Schema({ timestamps: true })
+class Conversions {
+  @Prop({})
+  baseToken: string;
+  @Prop({})
+  destinationToken: string;
+  @Prop({})
+  baseTokenamount: string;
+  @Prop({})
+  destinationTokenamount: string;
+  @Prop({})
+  status: string;
+}
+
 @Schema()
+class History {
+  @Prop()
+  deposits: [Deposits];
+  @Prop()
+  withdrawals: [Withdrawals];
+  @Prop()
+  transfers: [Transfers];
+  @Prop()
+  conversions: [Conversions];
+}
+
+@Schema({ timestamps: true })
 export class Users {
   @Prop({ required: true })
-  fullName: string;
+  firstName: string;
+
+  @Prop({ required: true })
+  lastName: string;
 
   @Prop({ required: true })
   email: string;
@@ -19,14 +83,13 @@ export class Users {
   @Prop()
   mobile: string;
 
-  @Prop({ default: '' })
-  cryptoAddress: string;
-
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    default: null,
+    type: Map,
   })
-  walletID: string;
+  wallet: Record<any, any>;
+
+  @Prop()
+  history: [History];
 
   @Prop({ default: Role.User })
   role: Role[];
