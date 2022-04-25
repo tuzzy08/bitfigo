@@ -10,8 +10,8 @@ interface ConversionOptions {
   baseTokenAmount: number;
   options?: any;
 }
-
-export async function getCurrentPrices(tokenIDs: string) {
+// Accepts an array of tokens as IDs, and VS currency e.g USD and returns an array with the prices
+export async function getCurrentPrices(tokenIDs) {
   return client.simplePrice({
     vs_currencies: 'usd',
     ids: tokenIDs,

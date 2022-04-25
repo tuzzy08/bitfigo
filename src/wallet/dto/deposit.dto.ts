@@ -19,6 +19,5 @@ export class DepositDTO {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
   amount: number;
 }

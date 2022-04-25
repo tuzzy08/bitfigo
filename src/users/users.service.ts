@@ -24,6 +24,7 @@ export class UsersService {
     if (!signupDto) throw new BadRequestException('No signup data provided');
     // Check if user already exists
     const user = await this.getUser(signupDto.username);
+    console.log(signupDto.username);
     if (user) throw new BadRequestException('User with this email exists!');
 
     const salt = 10;
@@ -40,9 +41,9 @@ export class UsersService {
   async getUser(username) {
     if (!username) throw new BadRequestException('No email provided');
     // ToObject returns the document as a javascript object
-    const user = await this.usersModel.findOne({ email: username });
+    const user = await this.usersModel.findOne({ username }).lean();
     if (user) {
-      return user.toObject();
+      return user;
     }
   }
 }

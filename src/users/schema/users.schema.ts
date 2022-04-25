@@ -47,22 +47,22 @@ class Conversions {
   @Prop({})
   destinationToken: string;
   @Prop({})
-  baseTokenamount: string;
+  baseTokenAmount: string;
   @Prop({})
-  destinationTokenamount: string;
+  destinationTokenAmount: string;
   @Prop({})
   status: string;
 }
 
 @Schema()
 class History {
-  @Prop()
+  @Prop({ default: () => [] })
   deposits: [Deposits];
-  @Prop()
+  @Prop({ default: () => [] })
   withdrawals: [Withdrawals];
-  @Prop()
+  @Prop({ default: () => [] })
   transfers: [Transfers];
-  @Prop()
+  @Prop({ default: () => [] })
   conversions: [Conversions];
 }
 
@@ -77,6 +77,9 @@ export class Users {
   @Prop({ required: true })
   username: string;
 
+  @Prop({ default: false })
+  emailVerified: string;
+
   @Prop({ required: true })
   passwordHash: string;
 
@@ -88,8 +91,8 @@ export class Users {
   })
   wallet: Record<any, any>;
 
-  @Prop()
-  history: [History];
+  @Prop({ default: () => ({}) })
+  history: History;
 
   @Prop({ default: Role.User })
   role: Role[];

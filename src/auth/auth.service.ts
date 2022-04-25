@@ -23,10 +23,11 @@ export class AuthService {
   }
   async login(user: any) {
     const payload = { username: user.email, sub: user._id };
-    return {
-      accessToken: this.jwtService.sign(payload),
-      user,
+    const authenticatedUser = {
+      ...user,
     };
+    authenticatedUser.accessToken = this.jwtService.sign(payload);
+    return authenticatedUser;
   }
   async signUp(signupDTO: SignUpDto) {
     const user = await this.usersService.signUp(signupDTO);

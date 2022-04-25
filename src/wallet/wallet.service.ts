@@ -64,10 +64,22 @@ export class WalletService {
   }
 
   async transfer(transferDto: TransferDTO) {
-    return transferDto;
+    const { userId, token, amount } = transferDto;
+    // Fetch user
+    const user = await this.userModel.findOne({ _id: userId });
+    if (!user) return;
+
+    let balance = Number(user.wallet.get(token));
+    // check if user has sufficient balance for this withdrawal
+    if (Number(amount) > balance) {
+      throw new InsufficientFundsException();
+    }
+    balance -= Number(amount);
+    user.wallet.set(token, Number(balance));
+    return user.save();
   }
 
-  async convert(convertDto: ConvertDTO) {
+  async getExchangeRate(convertDto: ConvertDTO) {
     const { userId, baseToken, destinationToken, baseTokenAmount } = convertDto;
     // Check if baseToken amount is valid
     if (Number(baseTokenAmount) <= 0) {
@@ -76,9 +88,8 @@ export class WalletService {
     // Fetch user
     const user = await this.userModel.findOne({ _id: userId });
     if (!user) return;
-    // Fetch Balances of both tokens
-    let destinationTokenbalance = Number(user.wallet.get(destinationToken));
-    let baseTokenbalance = Number(user.wallet.get(baseToken));
+    // Fetch balance of base token
+    const baseTokenbalance = Number(user.wallet.get(baseToken));
     // check if user has sufficient balance for this conversion
     if (Number(baseTokenAmount) > baseTokenbalance) {
       throw new InsufficientFundsException();
@@ -92,16 +103,50 @@ export class WalletService {
     const destinationTokenPrice =
       currentPrices[TokenSymbols[destinationToken]].usd;
     // Calculate exchange rate
-    const newDestinationTokenAmount = calculateExchangeRate({
+    const destinationTokenAmount = calculateExchangeRate({
       baseTokenPrice,
       destinationTokenPrice,
       baseTokenAmount,
     });
+    return {
+      baseTokenPrice,
+      destinationTokenPrice,
+      destinationTokenAmount,
+    };
+  }
+
+  async convert(convertDto: ConvertDTO) {
+    const { userId, baseToken, destinationToken, baseTokenAmount } = convertDto;
+
+    // Fetch user
+    const user = await this.userModel.findOne({ _id: userId });
+    if (!user) return;
+    // Fetch Balances of both tokens
+    let destinationTokenbalance = Number(user.wallet.get(destinationToken));
+    let baseTokenbalance = Number(user.wallet.get(baseToken));
+    // check if user has sufficient balance for this conversion
+    if (Number(baseTokenAmount) > baseTokenbalance) {
+      throw new InsufficientFundsException();
+    }
+    // Fetch amount of destination token
+    const { destinationTokenAmount } = await this.getExchangeRate(convertDto);
+    console.log(destinationTokenAmount);
     // Update wallet balances
-    destinationTokenbalance += Number(newDestinationTokenAmount);
+    destinationTokenbalance += Number(destinationTokenAmount);
     user.wallet.set(destinationToken, destinationTokenbalance);
 
     baseTokenbalance -= Number(baseTokenAmount);
     user.wallet.set(baseToken, baseTokenbalance);
+    console.log(user);
+    // user.history.conversions.push({
+    //   baseToken,
+    //   destinationToken,
+    //   baseTokenAmount: baseToken.toString(),
+    //   destinationTokenAmount,
+    //   status: 'Success',
+    // });
+    const res = await user.save();
+    if (res) return true;
+    return false;
   }
 }

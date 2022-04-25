@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  api:
+   container_name: assetlinetrade_api
+   image: s4g3/assetline-api
+   build:
+     context: .
+     target: production
+     dockerfile: ./Dockerfile
+   restart: unless-stopped
+   ports:
+     - 3001:3001
+     - 80:80
+   command: npm run start:prod
