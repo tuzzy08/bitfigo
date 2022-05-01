@@ -1,3 +1,4 @@
+import { VerifyDto } from './auth/dtos/verify.dto';
 import {
   Body,
   Controller,
@@ -29,7 +30,7 @@ export class AppController {
 
   @Get('/api/health/')
   async health() {
-    return { status: 'oki doki' };
+    return { healthCheck: 'oki doki' };
   }
 
   @Post('auth/signup')
@@ -37,8 +38,13 @@ export class AppController {
     return this.authService.signUp(signupDTO);
   }
 
+  @Post('auth/verify')
+  async verify(@Body() verifyDTO: VerifyDto) {
+    return this.authService.verify(verifyDTO);
+  }
+
   @UseGuards(JwtAuthGuard)
-  @Get('users')
+  @Get('/api/users')
   async getUser(@Query() query) {
     if (query?.username) {
       return this.usersService.getUser(query?.username);

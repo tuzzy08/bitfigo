@@ -10,6 +10,16 @@ services:
      dockerfile: ./Dockerfile
    restart: unless-stopped
    ports:
-     - 3001:3001
+     - 1313:1313
      - 80:80
+   environment:
+      VIRTUAL_HOST: coinjettrade.com,www.coinjettrade.com
+      VIRTUAL_PORT: 1313
+      LETSENCRYPT_HOST: coinjettrade.com,www.coinjettrade.com
+      LETSENCRYPT_EMAIL: dthc@protonmail.com
    command: npm run start:prod
+
+networks:
+    default:
+        external:
+            name: nginx-proxy

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 import { Role } from '../../auth/enums/role.enum';
+import { conversionStatus } from '../enums/status.enum';
 
 export type UsersDocument = Users & Document;
 
@@ -15,7 +16,7 @@ class Deposits {
   network: string;
   @Prop({})
   address: string;
-  @Prop({})
+  @Prop({ default: conversionStatus.PENDING })
   status: string;
 }
 @Schema({ timestamps: true })
@@ -78,7 +79,7 @@ export class Users {
   username: string;
 
   @Prop({ default: false })
-  emailVerified: string;
+  emailVerified: boolean;
 
   @Prop({ required: true })
   passwordHash: string;

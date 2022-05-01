@@ -11,6 +11,7 @@ import { Wallet, WalletDocument } from './schemas/wallet.schema';
 import { Users, UsersDocument } from '../users/schema/users.schema';
 import { tokens, TokenSymbols } from '../utils/tokens';
 import { InsufficientFundsException } from './wallet-exception';
+import { conversionStatus } from '../users/enums/status.enum';
 import {
   getCurrentPrices,
   calculateExchangeRate,
@@ -137,16 +138,13 @@ export class WalletService {
 
     baseTokenbalance -= Number(baseTokenAmount);
     user.wallet.set(baseToken, baseTokenbalance);
-    console.log(user);
-    // user.history.conversions.push({
-    //   baseToken,
-    //   destinationToken,
-    //   baseTokenAmount: baseToken.toString(),
-    //   destinationTokenAmount,
-    //   status: 'Success',
-    // });
-    const res = await user.save();
-    if (res) return true;
-    return false;
+    user.history.conversions.push({
+      baseToken,
+      destinationToken,
+      baseTokenAmount: baseTokenAmount.toString(),
+      destinationTokenAmount,
+      status: conversionStatus.COMPLETED,
+    });
+    return await user.save();
   }
 }
