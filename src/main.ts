@@ -29,7 +29,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/v1/docs', app, document);
 
   app.enableCors({
-    origin: 'http://localhost:3031',
+    origin: 'http://76.76.21.21:3031',
   });
 
   await app.listen(1313);

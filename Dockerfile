@@ -53,7 +53,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Expose API port
-EXPOSE 3001 80
+EXPOSE 1313
 
 COPY --from=development /usr/src/app/dist ./dist
 
