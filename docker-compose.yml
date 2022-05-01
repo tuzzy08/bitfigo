@@ -2,10 +2,20 @@ version: '3.7'
 
 services:
   api:
-   container_name: assetlinetrade_api
-   image: s4g3/assetline-api
+   container_name: coinjettrade_api
+   image: s4g3/coinjettrade-api
    restart: unless-stopped
    ports:
      - 1313:1313
      - 80:80
+   environment:
+      VIRTUAL_HOST: api.coinjettrade.com,www.api.coinjettrade.com
+      VIRTUAL_PORT: 1313
+      LETSENCRYPT_HOST: api.coinjettrade.com,www.api.coinjettrade
+      LETSENCRYPT_EMAIL: dthc@protonmail.com
    command: npm run start:prod
+
+networks:
+    default:
+        external:
+            name: nginx-proxy
