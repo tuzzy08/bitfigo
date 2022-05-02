@@ -29,7 +29,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/v1/docs', app, document);
 
   app.enableCors({
-    origin: 'http://76.76.21.21:3031',
+    origin: 'https://coinjettrade.com',
   });
 
   await app.listen(1313);
