@@ -9,17 +9,17 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Users, UsersDocument } from './schema/users.schema';
-import { VCode, VCodeDocument } from './schema/vCode.schema';
+import { Token, TokenDocument } from './schema/tokens.schema';
 import { SignUpDto } from './dto/sign-up.dto';
 import { WalletService } from '../wallet/wallet.service';
 import { generateCode } from '../utils/generateCode';
-import { sign } from 'crypto';
+import { TokenType } from './enums/tokenType.enum';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(Users.name) private usersModel: Model<UsersDocument>,
-    @InjectModel(VCode.name) private vtokenModel: Model<VCodeDocument>,
+    @InjectModel(Token.name) private tokenModel: Model<TokenDocument>,
     @Inject(forwardRef(() => WalletService))
     private walletService: WalletService,
   ) {}
@@ -36,9 +36,10 @@ export class UsersService {
     const newUser = await new this.usersModel(payload);
     // Generate account verification code
     const gc = generateCode();
-    const code = await new this.vtokenModel({
+    const code = await new this.tokenModel({
       username: signupDto.username,
       value: gc,
+      type: TokenType.SIGNUP,
     });
     await code.save();
     // Initialize wallet and balances

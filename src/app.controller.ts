@@ -38,11 +38,6 @@ export class AppController {
     return this.authService.signUp(signupDTO);
   }
 
-  @Post('auth/verify')
-  async verify(@Body() verifyDTO: VerifyDto) {
-    return this.authService.verify(verifyDTO);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Get('/api/users')
   async getUser(@Query() query) {

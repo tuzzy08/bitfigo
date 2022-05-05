@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersService } from './users.service';
 import { WalletModule } from '../wallet/wallet.module';
 import { UsersSchema, Users } from './schema/users.schema';
-import { VCode, VCodeSchema } from './schema/vCode.schema';
+import { Token, TokenSchema } from './schema/tokens.schema';
 
 @Module({
   imports: [
@@ -11,7 +11,7 @@ import { VCode, VCodeSchema } from './schema/vCode.schema';
     forwardRef(() => WalletModule),
     MongooseModule.forFeature([
       { name: Users.name, schema: UsersSchema },
-      { name: VCode.name, schema: VCodeSchema },
+      { name: Token.name, schema: TokenSchema },
     ]),
   ],
   providers: [UsersService],
