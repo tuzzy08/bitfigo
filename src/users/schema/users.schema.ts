@@ -14,20 +14,23 @@ class Deposits {
   amount: string;
   @Prop({})
   network: string;
-  @Prop({})
-  address: string;
+  // @Prop({})
+  // address: string;
   @Prop({ default: conversionStatus.PENDING })
   status: string;
 }
 @Schema({ timestamps: true })
 class Withdrawals {
-  @Prop({})
+  @Prop()
   token: string;
-  @Prop({})
-  amount: string;
-  @Prop({})
+
+  @Prop()
+  amount: number;
+
+  @Prop()
   network: string;
-  @Prop({})
+
+  @Prop()
   status: string;
 }
 @Schema({ timestamps: true })

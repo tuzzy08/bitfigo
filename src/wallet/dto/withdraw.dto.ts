@@ -5,7 +5,7 @@ export class WithdrawDTO {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  userId: string;
+  username: string;
 
   @ApiProperty()
   @IsNotEmpty()

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConvertDTO, DepositDTO, TransferDTO, WithdrawDTO } from './dto';
@@ -37,30 +32,42 @@ export class WalletService {
   }
 
   async deposit(depositDto: DepositDTO) {
-    const { userId, token, amount } = depositDto;
+    const { username, token, amount, network } = depositDto;
     // Fetch user
-    const user = await this.userModel.findOne({ _id: userId });
+    const user = await this.userModel.findOne({ username });
     if (!user) return;
     // Update balance
     let currentBalance = Number(user.wallet.get(token));
     currentBalance += Number(amount);
     user.wallet.set(token, Number(currentBalance));
+    user.history.deposits.push({
+      token,
+      amount,
+      network,
+      status: conversionStatus.PENDING,
+    });
     return user.save();
   }
 
   async withdraw(withdrawDto: WithdrawDTO) {
-    const { userId, token, amount } = withdrawDto;
+    const { username, token, amount, network } = withdrawDto;
     // Fetch user
-    const user = await this.userModel.findOne({ _id: userId });
+    const user = await this.userModel.findOne({ username });
     if (!user) return;
 
     let balance = Number(user.wallet.get(token));
     // check if user has sufficient balance for this withdrawal
     if (Number(amount) > balance) {
-      throw new InsufficientFundsException();
+      throw new BadRequestException('Insufficient funds for this operation');
     }
     balance -= Number(amount);
     user.wallet.set(token, Number(balance));
+    user.history.withdrawals.push({
+      token,
+      amount,
+      network,
+      status: conversionStatus.PENDING,
+    });
     return user.save();
   }
 

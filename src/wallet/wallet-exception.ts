@@ -1,7 +1,7 @@
-import { BadRequestException } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 
-export class InsufficientFundsException extends BadRequestException {
+export class InsufficientFundsException extends HttpException {
   constructor() {
-    super('Insufficient funds for this operation');
+    super('Insufficient funds for this operation', 500);
   }
 }

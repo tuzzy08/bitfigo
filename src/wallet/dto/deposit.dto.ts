@@ -5,7 +5,7 @@ export class DepositDTO {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  userId: string;
+  username: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -19,5 +19,5 @@ export class DepositDTO {
 
   @ApiProperty()
   @IsNotEmpty()
-  amount: number;
+  amount: string;
 }
