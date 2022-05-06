@@ -87,7 +87,7 @@ export class AuthService {
   async generatePasswordResetToken(username: string) {
     // Validate the user
     const user = await this.usersService.getUser(username);
-    if (!user) throw new NotFoundException();
+    if (!user) throw new NotFoundException('Email not found!');
     // Check if there's an existing token & delete it
     await this.tokenModel.findOneAndDelete({ username });
     // Generate password reset token

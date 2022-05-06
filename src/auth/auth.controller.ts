@@ -43,6 +43,7 @@ export class AuthController {
 
   @Post('generatePasswordResetToken')
   async generatePasswordResetToken(@Body() body) {
+    console.log(body);
     return this.authService.generatePasswordResetToken(body.username);
   }
 
