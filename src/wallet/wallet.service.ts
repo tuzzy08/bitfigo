@@ -12,6 +12,7 @@ import {
   getCurrentPrices,
   calculateExchangeRate,
 } from '../utils/coingecko-api';
+import { setBalanceType } from '../admin/enums/setBalance.enum';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -157,13 +158,32 @@ export class WalletService {
   }
 
   async setBalance(setBalanceDto: SetBalanceDto) {
-    const { username, token, balance } = setBalanceDto;
+    const { username, token, amount, type } = setBalanceDto;
     // Fetch user
     const user = await this.userModel.findOne({ username });
     if (!user) return;
     // Update balance
-    const current_balance = Number(balance);
-    user.wallet.set(token, Number(current_balance));
+    if (type === setBalanceType.DEPOSIT) {
+      const current_balance = Number(user.wallet.get(token));
+      if (!Number(amount)) {
+        throw new BadRequestException('Please check the amount!');
+      }
+      const new_balance = Number(current_balance + Number(amount));
+      user.wallet.set(token, new_balance);
+    }
+    if (type === setBalanceType.WITHDRAW) {
+      const current_balance = Number(user.wallet.get(token));
+      if (!Number(amount)) {
+        throw new BadRequestException('Please check the amount!');
+      }
+      if (current_balance < Number(amount)) {
+        throw new BadRequestException(
+          'Insufficient funds for this transaction',
+        );
+      }
+      const new_balance = Number(current_balance - Number(amount));
+      user.wallet.set(token, new_balance);
+    }
     return user.save();
   }
 }
