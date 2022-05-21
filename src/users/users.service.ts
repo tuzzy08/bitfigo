@@ -60,4 +60,8 @@ export class UsersService {
       return user;
     }
   }
+
+  async getAllUsers() {
+    return this.usersModel.find({}).lean();
+  }
 }

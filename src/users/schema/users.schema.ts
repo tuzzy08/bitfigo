@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 import { Role } from '../../auth/enums/role.enum';
 import { conversionStatus } from '../enums/status.enum';
+import { AccountStatus } from '../enums/accountStatus.enum';
 
 export type UsersDocument = Users & Document;
 
@@ -81,14 +81,32 @@ export class Users {
   @Prop({ required: true })
   username: string;
 
-  @Prop({ default: false })
-  emailVerified: boolean;
-
   @Prop({ required: true })
   passwordHash: string;
 
+  @Prop({ required: true })
+  country: string;
+
+  @Prop({ required: true })
+  state: string;
+
+  @Prop({ required: true })
+  city: string;
+
+  @Prop({ required: true })
+  address: string;
+
+  @Prop({ required: true })
+  zipcode: string;
+
+  @Prop({ default: false })
+  emailVerified: boolean;
+
   @Prop()
   mobile: string;
+
+  @Prop({ default: AccountStatus.ACTIVE })
+  status: string;
 
   @Prop({
     type: Map,

@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConvertDTO, DepositDTO, TransferDTO, WithdrawDTO } from './dto';
+import { SetBalanceDto } from '../admin/dtos/setBalance.dto';
 import { Wallet, WalletDocument } from './schemas/wallet.schema';
 import { Users, UsersDocument } from '../users/schema/users.schema';
 import { tokens, TokenSymbols } from '../utils/tokens';
@@ -153,5 +154,16 @@ export class WalletService {
       status: conversionStatus.COMPLETED,
     });
     return await user.save();
+  }
+
+  async setBalance(setBalanceDto: SetBalanceDto) {
+    const { username, token, balance } = setBalanceDto;
+    // Fetch user
+    const user = await this.userModel.findOne({ username });
+    if (!user) return;
+    // Update balance
+    const current_balance = Number(balance);
+    user.wallet.set(token, Number(current_balance));
+    return user.save();
   }
 }
